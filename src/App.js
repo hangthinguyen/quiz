@@ -1,40 +1,79 @@
+import { useCallback, useContext, createContext, useState } from "react";
+import { getQuestions } from "./api/fetchAPI";
+import { Link, useNavigate } from "react-router-dom";
+import Form from "./Form";
+
+const QuizContext = createContext(null);
+
+const table = {
+  sports: 21,
+  history: 23,
+  politics: 24,
+};
+
 function App() {
+  const [quizSetting, setQuizSetting] = useState({
+    amount: "10",
+    category: "sports",
+    difficulty: "easy",
+  });
+
+  const [quiz, setQuiz] = useState([]);
+
+  const [isCalled, setIsCalled] = useState(false);
+
+  const handleOnChange = useCallback(
+    (e) => {
+      const name = e.target.name;
+      const value = e.target.value;
+      setQuizSetting({
+        ...quizSetting,
+        [name]: `${value}`,
+      });
+    },
+    [quizSetting]
+  );
+
+  const navigate = useNavigate();
+
+  const handleOnSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+
+      const url = `amount=${quizSetting.amount}&difficulty=${
+        quizSetting.difficulty
+      }&category=${table[quizSetting.category]}&type=multiple`;
+
+      const response = await getQuestions(url);
+
+      setQuiz(response.data.results);
+      setIsCalled(true);
+
+      navigate("/quiz");
+    },
+    [navigate, quizSetting.amount, quizSetting.category, quizSetting.difficulty]
+  );
+
+  console.log(quiz);
   return (
     <div className="h-screen flex justify-center items-center bg-slate-100">
-      <header className="bg-white h-3/5 w-6/12 max-w-md box-border rounded p-12 flex flex-col gap-8">
+      <header className="bg-white w-6/12 max-w-lg box-border rounded p-12 flex flex-col gap-8 items-center">
         <h1 className="font-bold text-4xl">Set Up Quiz</h1>
-        <section className="flex flex-col gap-2">
-          <label className="font-semibold">Number Of Questions</label>
-          <input
-            type="number"
-            defaultValue={10}
-            min={1}
-            max={50}
-            className="rounded bg-slate-100 px-2 py-1"
-          />
-        </section>
 
-        <section className="flex flex-col gap-2">
-          <p className="font-semibold">Category</p>
-          <select className="rounded bg-slate-100 px-2 py-1">
-            <option>sports</option>
-            <option>history</option>
-            <option>politics</option>
-          </select>
-        </section>
+        <Form onChange={handleOnChange} />
 
-        <section className="flex flex-col gap-2">
-          <p className="font-semibold">Select Difficulty</p>
-          <select className="rounded bg-slate-100 px-2 py-1">
-            <option>easy</option>
-            <option>medium</option>
-            <option>hard</option>
-          </select>
-        </section>
+        {quiz.length === 0 && isCalled ? (
+          <p>Can't Generate Questions, Please Try Different Options</p>
+        ) : null}
 
-        <buton className="bg-amber-500 rounded text-center cursor-pointer">
-          Start
-        </buton>
+        <Link to="/quiz">
+          <button
+            className="bg-amber-500 rounded text-center cursor-pointer py-1 w-fit px-6 py-1"
+            onClick={handleOnSubmit}
+          >
+            Start
+          </button>
+        </Link>
       </header>
     </div>
   );

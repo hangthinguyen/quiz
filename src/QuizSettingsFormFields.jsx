@@ -1,6 +1,6 @@
 import React from "react";
 
-const Form = ({ onChange }) => {
+const QuizSettingsFormFields = ({ onChange }) => {
   return (
     <div className="flex flex-col gap-6 w-full">
       <section className="flex flex-col gap-2">
@@ -51,4 +51,4 @@ const Form = ({ onChange }) => {
   );
 };
 
-export default Form;
+export default QuizSettingsFormFields;

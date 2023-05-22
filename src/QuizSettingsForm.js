@@ -1,9 +1,8 @@
-import { useCallback, useContext, createContext, useState } from "react";
+import { useCallback, useState, useContext } from "react";
 import { getQuestions } from "./api/fetchAPI";
 import { Link, useNavigate } from "react-router-dom";
-import Form from "./Form";
-
-const QuizContext = createContext(null);
+import QuizSettingsFormFields from "./QuizSettingsFormFields";
+import QuizContext from "./contexts/QuizContext";
 
 const table = {
   sports: 21,
@@ -11,14 +10,14 @@ const table = {
   politics: 24,
 };
 
-function App() {
+function QuizSettingsForm() {
   const [quizSetting, setQuizSetting] = useState({
     amount: "10",
     category: "sports",
     difficulty: "easy",
   });
 
-  const [quiz, setQuiz] = useState([]);
+  const { quiz, setQuiz } = useContext(QuizContext);
 
   const [isCalled, setIsCalled] = useState(false);
 
@@ -45,22 +44,26 @@ function App() {
       }&category=${table[quizSetting.category]}&type=multiple`;
 
       const response = await getQuestions(url);
-
       setQuiz(response.data.results);
       setIsCalled(true);
 
       navigate("/quiz");
     },
-    [navigate, quizSetting.amount, quizSetting.category, quizSetting.difficulty]
+    [
+      navigate,
+      quizSetting.amount,
+      quizSetting.category,
+      quizSetting.difficulty,
+      setQuiz,
+    ]
   );
 
-  console.log(quiz);
   return (
     <div className="h-screen flex justify-center items-center bg-slate-100">
       <header className="bg-white w-6/12 max-w-lg box-border rounded p-12 flex flex-col gap-8 items-center">
         <h1 className="font-bold text-4xl">Set Up Quiz</h1>
 
-        <Form onChange={handleOnChange} />
+        <QuizSettingsFormFields onChange={handleOnChange} />
 
         {quiz.length === 0 && isCalled ? (
           <p>Can't Generate Questions, Please Try Different Options</p>
@@ -79,4 +82,4 @@ function App() {
   );
 }
 
-export default App;
+export default QuizSettingsForm;
